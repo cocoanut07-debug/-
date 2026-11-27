@@ -3,294 +3,448 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>음식 분석 앱</title>
+  <title>AI 음식 영양 및 알레르기 분석</title>
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
-    body { margin: 0; padding: 20px; background: #f4f6f9; color: #1f2937; }
-    .container { max-width: 680px; margin: 0 auto; }
-    .header { text-align: center; margin-bottom: 24px; }
-    .header h1 { margin: 0 0 6px; font-size: 24px; color: #111827; }
-    .header p { margin: 0; color: #6b7280; font-size: 14px; }
-    .card { background: #fff; border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
-    .card-title { font-size: 15px; font-weight: 700; margin: 0 0 14px; display: flex; justify-content: space-between; align-items: center; }
-    .badge { background: #e0f2fe; color: #0369a1; font-size: 12px; padding: 3px 10px; border-radius: 999px; }
-    .form-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
-    .radio-group { display: flex; gap: 12px; align-items: center; }
-    .radio-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 14px; }
-    select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #fff; }
-    .dropzone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f8fafc; }
-    .dropzone:hover, .dropzone.dragover { border-color: #2563eb; background: #eff6ff; }
-    .dropzone p { margin: 4px 0; font-size: 14px; font-weight: 600; color: #334155; }
-    .dropzone span { font-size: 12px; color: #64748b; }
-    .preview-list { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
-    .preview-item { position: relative; width: 92px; height: 92px; border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; }
-    .preview-item img { width: 100%; height: 100%; object-fit: cover; }
-    .remove-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(17, 24, 39, 0.75); color: #fff; font-size: 13px; cursor: pointer; line-height: 1; }
-    .primary-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; background: #1d4ed8; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-bottom: 16px; }
-    .primary-btn:hover { background: #1e40af; }
-    .primary-btn:disabled { background: #93c5fd; cursor: not-allowed; }
-    .result-item { display: flex; gap: 14px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 12px; background: #fafafa; }
-    .result-thumb { width: 84px; height: 84px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
-    .result-body { flex: 1; min-width: 0; }
-    .result-body h4 { margin: 0 0 8px; font-size: 15px; color: #111827; }
-    .error-box { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px 12px; border-radius: 8px; font-size: 13px; word-break: break-all; }
-    .info-grid { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 13px; }
-    .info-row strong { color: #374151; display: inline-block; width: 115px; }
-    .comment-box { margin-top: 8px; padding: 8px 10px; background: #eff6ff; border-radius: 8px; font-size: 13px; color: #1e3a8a; }
-    .secondary-btn { padding: 8px 14px; border: 1px solid #d1d5db; background: #fff; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #18181b;
+      --muted: #6b7280;
+      --primary: #16a34a;
+      --primary-hover: #15803d;
+      --border: #e5e7eb;
+      --warn-bg: #fffbeb;
+      --warn-border: #fde68a;
+      --warn-text: #92400e;
+      --warn-badge: #fef3c7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.35rem;
+    }
+
+    .subtitle {
+      margin: 0 0 18px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    select, input[type="file"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+
+    .preview-box {
+      margin: 14px 0;
+      text-align: center;
+      display: none;
+    }
+
+    .preview-box img {
+      max-width: 100%;
+      max-height: 280px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+    }
+
+    button.submit-btn {
+      width: 100%;
+      padding: 13px 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    button.submit-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    button.submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      min-height: 22px;
+    }
+
+    .status.error {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    /* 분석 결과 카드 */
+    #resultCard {
+      display: none;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .food-title {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .calorie-pill {
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 700;
+      font-size: 0.92rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .macro-item {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .macro-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .macro-value {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    /* 주요 알레르기 유발 성분 박스 */
+    .allergen-box {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+
+    .allergen-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--warn-text);
+    }
+
+    .allergen-badge {
+      background: var(--warn-badge);
+      border: 1px solid var(--warn-border);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+    }
+
+    .allergen-text {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--warn-text);
+    }
+
+    .comment-box {
+      background: #f9fafb;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.92rem;
+      margin-bottom: 12px;
+    }
+
+    .drive-link {
+      font-size: 0.85rem;
+    }
+
+    .drive-link a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .drive-link a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 520px) {
+      .form-row,
+      .macro-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>🍽️ 음식 분석 앱</h1>
-      <p>사진을 올리면 AI가 영양 정보를 분석하고 시트에 자동 기록해 드려요</p>
-    </div>
-
     <div class="card">
-      <div class="card-title">사용자 정보 선택</div>
-      <div class="form-row">
-        <div class="radio-group">
-          <strong style="font-size:14px;">성별</strong>
-          <label><input type="radio" name="gender" value="남성" checked /> 남성</label>
-          <label><input type="radio" name="gender" value="여성" /> 여성</label>
+      <h1>🍽️ 음식 영양 및 알레르기 분석</h1>
+      <p class="subtitle">음식 사진을 업로드하면 칼로리, 영양 성분, 주요 알레르기 유발 성분을 분석하고 기록합니다.</p>
+
+      <form id="analyzeForm">
+        <div class="form-row">
+          <div>
+            <label for="gender">성별</label>
+            <select id="gender" name="gender" required>
+              <option value="여성">여성</option>
+              <option value="남성">남성</option>
+              <option value="선택 안 함">선택 안 함</option>
+            </select>
+          </div>
+          <div>
+            <label for="ageGroup">나이대</label>
+            <select id="ageGroup" name="ageGroup" required>
+              <option value="10대">10대</option>
+              <option value="20대" selected>20대</option>
+              <option value="30대">30대</option>
+              <option value="40대">40대</option>
+              <option value="50대">50대</option>
+              <option value="60대 이상">60대 이상</option>
+            </select>
+          </div>
         </div>
+
         <div>
-          <strong style="font-size:14px; margin-right:8px;">나이대</strong>
-          <select id="ageGroup">
-            <option value="">나이대를 선택하세요</option>
-            <option value="10대 이하">10대 이하</option>
-            <option value="20대">20대</option>
-            <option value="30대">30대</option>
-            <option value="40대">40대</option>
-            <option value="50대">50대</option>
-            <option value="60대 이상">60대 이상</option>
-          </select>
+          <label for="foodImage">음식 사진 선택</label>
+          <input type="file" id="foodImage" accept="image/*" required />
+        </div>
+
+        <div class="preview-box" id="previewBox">
+          <img id="previewImg" alt="선택한 음식 미리보기" />
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">AI 영양 및 알레르기 분석 시작</button>
+        <div class="status" id="statusText"></div>
+      </form>
+    </div>
+
+    <!-- 분석 결과 카드 -->
+    <div class="card" id="resultCard">
+      <div class="result-header">
+        <h2 class="food-title" id="resultFoodName">-</h2>
+        <span class="calorie-pill" id="resultCalories">- kcal</span>
+      </div>
+
+      <div class="macro-grid">
+        <div class="macro-item">
+          <div class="macro-label">탄수화물</div>
+          <div class="macro-value" id="resultCarbs">-</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-label">단백질</div>
+          <div class="macro-value" id="resultProtein">-</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-label">지방</div>
+          <div class="macro-value" id="resultFat">-</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-label">적정 섭취량</div>
+          <div class="macro-value" id="resultPortion">-</div>
         </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="card-title">
-        <span>음식 사진 업로드</span>
-        <span class="badge" id="fileCountBadge">0장 선택됨</span>
+      <!-- 주요 알레르기 유발 성분 표시 영역 -->
+      <div class="allergen-box">
+        <div class="allergen-header">
+          <span class="allergen-badge">알레르기 주의</span>
+          <span>주요 알레르기 유발 성분</span>
+        </div>
+        <p class="allergen-text" id="resultAllergens">해당 없음</p>
       </div>
-      <div class="dropzone" id="dropzone">
-        <p>여기를 클릭하거나 사진을 끌어다 놓으세요</p>
-        <span>JPG, PNG, WEBP 지원 · 한 장 또는 여러 장 선택 가능</span>
-        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple hidden />
-      </div>
-      <div class="preview-list" id="previewList"></div>
-    </div>
 
-    <button class="primary-btn" id="analyzeBtn">분석 및 저장 시작</button>
+      <div class="comment-box" id="resultComment"></div>
 
-    <div class="card" id="resultCard" style="display:none;">
-      <div class="card-title">
-        <span>분석 결과</span>
-        <span class="badge" id="userSummaryBadge"></span>
-      </div>
-      <div id="resultList"></div>
-      <div style="text-align:right; margin-top:12px;">
-        <button class="secondary-btn" id="resetBtn">새로 분석하기</button>
+      <div class="drive-link" id="driveLinkWrap" style="display: none;">
+        업로드된 원본 사진: <a id="driveLink" href="#" target="_blank" rel="noopener noreferrer">Google 드라이브에서 보기</a>
       </div>
     </div>
   </div>
 
   <script>
-    // ▼ 여기에 Google Apps Script에서 배포한 웹 앱 URL(/exec)을 붙여넣으세요 ▼
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/여기에_배포_ID_입력/exec";
+    // 본인의 Google Apps Script 웹 앱(/exec) URL로 교체하세요.
+    const GAS_WEB_APP_URL = '여기에_GAS_웹앱_URL_입력';
 
-    let selectedFiles = [];
+    const form = document.getElementById('analyzeForm');
+    const fileInput = document.getElementById('foodImage');
+    const previewBox = document.getElementById('previewBox');
+    const previewImg = document.getElementById('previewImg');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusText = document.getElementById('statusText');
+    const resultCard = document.getElementById('resultCard');
 
-    const dropzone = document.getElementById("dropzone");
-    const fileInput = document.getElementById("fileInput");
-    const previewList = document.getElementById("previewList");
-    const fileCountBadge = document.getElementById("fileCountBadge");
-    const analyzeBtn = document.getElementById("analyzeBtn");
-    const resultCard = document.getElementById("resultCard");
-    const resultList = document.getElementById("resultList");
-    const userSummaryBadge = document.getElementById("userSummaryBadge");
-    const resetBtn = document.getElementById("resetBtn");
-
-    dropzone.addEventListener("click", () => fileInput.click());
-    dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
-    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
-    dropzone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropzone.classList.remove("dragover");
-      handleFiles(e.dataTransfer.files);
-    });
-    fileInput.addEventListener("change", (e) => {
-      handleFiles(e.target.files);
-      fileInput.value = "";
-    });
-
-    function handleFiles(files) {
-      const validTypes = ["image/jpeg", "image/png", "image/webp"];
-      for (const file of files) {
-        if (!validTypes.includes(file.type)) continue;
-        selectedFiles.push({
-          file: file,
-          previewUrl: URL.createObjectURL(file)
-        });
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) {
+        previewBox.style.display = 'none';
+        return;
       }
-      renderPreviews();
-    }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        previewBox.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
 
-    function renderPreviews() {
-      fileCountBadge.textContent = `${selectedFiles.length}장 선택됨`;
-      previewList.innerHTML = "";
-      selectedFiles.forEach((item, idx) => {
-        const div = document.createElement("div");
-        div.className = "preview-item";
-        div.innerHTML = `
-          <img src="${item.previewUrl}" alt="미리보기" />
-          <button class="remove-btn" data-idx="${idx}">×</button>
-        `;
-        previewList.appendChild(div);
-      });
-
-      document.querySelectorAll(".remove-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const idx = Number(btn.dataset.idx);
-          URL.revokeObjectURL(selectedFiles[idx].previewUrl);
-          selectedFiles.splice(idx, 1);
-          renderPreviews();
-        });
-      });
-    }
-
-    // 이미지 리사이징 및 Base64 변환
-    function compressImage(file, maxWidth = 1024, quality = 0.8) {
+    function readFileAsBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.onload = () => {
-            let width = img.width;
-            let height = img.height;
-            if (width > maxWidth) {
-              height = Math.round((height * maxWidth) / width);
-              width = maxWidth;
-            }
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
-
-            const dataUrl = canvas.toDataURL("image/jpeg", quality);
-            const base64Data = dataUrl.split(",")[1];
-            resolve({ mimeType: "image/jpeg", base64Data });
-          };
-          img.onerror = reject;
-          img.src = event.target.result;
+        reader.onload = () => {
+          const resultStr = String(reader.result || '');
+          const base64Data = resultStr.includes(',') ? resultStr.split(',')[1] : resultStr;
+          resolve(base64Data);
         };
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error('파일을 읽는 중 오류가 발생했습니다.'));
         reader.readAsDataURL(file);
       });
     }
 
-    // Google Apps Script 웹 앱으로 POST 요청 전송
-    async function sendToGasBackend(payload) {
-      const response = await fetch(GAS_WEB_APP_URL, {
-        method: "POST",
-        // CORS preflight(OPTIONS) 우회를 위해 text/plain 사용
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
+    function renderResult(responseJson) {
+      const d = responseJson.data || {};
 
-      if (!response.ok) {
-        throw new Error(`HTTP 오류: ${response.status}`);
+      document.getElementById('resultFoodName').textContent = d.foodName || '인식 불가';
+      document.getElementById('resultCalories').textContent = d.calories || '-';
+      document.getElementById('resultCarbs').textContent = d.carbs || d.carbsAndProtein || '-';
+      document.getElementById('resultProtein').textContent = d.protein || '-';
+      document.getElementById('resultFat').textContent = d.fat || '-';
+      document.getElementById('resultPortion').textContent = d.recommendedPortion || '-';
+
+      // 주요 알레르기 유발 성분 반영
+      const allergenValue = (d.allergens && String(d.allergens).trim()) || '해당 없음';
+      document.getElementById('resultAllergens').textContent = allergenValue;
+
+      document.getElementById('resultComment').textContent = d.comment || '영양 코멘트가 없습니다.';
+
+      const driveLinkWrap = document.getElementById('driveLinkWrap');
+      const driveLink = document.getElementById('driveLink');
+      if (responseJson.fileUrl) {
+        driveLink.href = responseJson.fileUrl;
+        driveLinkWrap.style.display = 'block';
+      } else {
+        driveLinkWrap.style.display = 'none';
       }
-      return await response.json();
+
+      resultCard.style.display = 'block';
     }
 
-    analyzeBtn.addEventListener("click", async () => {
-      const genderEl = document.querySelector('input[name="gender"]:checked');
-      const ageGroup = document.getElementById("ageGroup").value;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusText.classList.remove('error');
 
-      if (!genderEl || !ageGroup) {
-        alert("성별과 나이대를 모두 선택해 주세요.");
-        return;
-      }
-      if (selectedFiles.length === 0) {
-        alert("분석할 음식 사진을 최소 1장 이상 선택해 주세요.");
-        return;
-      }
-      if (GAS_WEB_APP_URL.includes("여기에_배포_ID_입력")) {
-        alert("index.html 코드 상단의 GAS_WEB_APP_URL에 실제 웹 앱 주소를 입력해 주세요.");
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) {
+        statusText.textContent = '음식 사진을 먼저 선택해 주세요.';
+        statusText.classList.add('error');
         return;
       }
 
-      analyzeBtn.disabled = true;
-      analyzeBtn.textContent = "분석 중입니다... 잠시만 기다려 주세요";
-      resultCard.style.display = "block";
-      userSummaryBadge.textContent = `${genderEl.value} · ${ageGroup}`;
-      resultList.innerHTML = "";
+      submitBtn.disabled = true;
+      statusText.textContent = 'AI 영양 및 알레르기 분석, 드라이브 저장 중...';
 
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const item = selectedFiles[i];
-        const resultItem = document.createElement("div");
-        resultItem.className = "result-item";
-        resultItem.innerHTML = `
-          <img class="result-thumb" src="${item.previewUrl}" alt="${item.file.name}" />
-          <div class="result-body">
-            <h4>#${i + 1} ${item.file.name}</h4>
-            <div class="status-text" style="font-size:13px; color:#2563eb;">AI 영양 분석 및 드라이브 저장 중...</div>
-          </div>
-        `;
-        resultList.appendChild(resultItem);
+      try {
+        const base64Data = await readFileAsBase64(file);
+        const payload = {
+          gender: document.getElementById('gender').value,
+          ageGroup: document.getElementById('ageGroup').value,
+          fileName: file.name,
+          mimeType: file.type || 'image/jpeg',
+          base64Data
+        };
 
-        const bodyDiv = resultItem.querySelector(".result-body");
+        const res = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
 
-        try {
-          const compressed = await compressImage(item.file);
-          const res = await sendToGasBackend({
-            gender: genderEl.value,
-            ageGroup: ageGroup,
-            fileName: item.file.name,
-            mimeType: compressed.mimeType,
-            base64Data: compressed.base64Data
-          });
-
-          if (res && res.success) {
-            const d = res.data || res;
-            bodyDiv.innerHTML = `
-              <h4>#${i + 1} ${d.foodName || item.file.name}</h4>
-              <div class="info-grid">
-                <div class="info-row"><strong>칼로리:</strong> ${d.calories || "-"}</div>
-                <div class="info-row"><strong>탄수화물/단백질/지방:</strong> ${d.carbs || "-"} / ${d.protein || "-"} / ${d.fat || "-"}</div>
-                <div class="info-row"><strong>적정 섭취량:</strong> ${d.recommendedPortion || "-"}</div>
-              </div>
-              ${d.comment ? `<div class="comment-box">💡 ${d.comment}</div>` : ""}
-            `;
-          } else {
-            bodyDiv.innerHTML = `
-              <h4>#${i + 1} ${item.file.name}</h4>
-              <div class="error-box">분석 실패: ${(res && res.error) ? res.error : "알 수 없는 오류"}</div>
-            `;
-          }
-        } catch (err) {
-          bodyDiv.innerHTML = `
-            <h4>#${i + 1} ${item.file.name}</h4>
-            <div class="error-box">통신 오류: ${err.message}</div>
-          `;
+        const json = await res.json();
+        if (!json.success) {
+          throw new Error(json.error || '분석 처리 중 오류가 발생했습니다.');
         }
+
+        renderResult(json);
+        statusText.textContent = '분석 및 기록이 완료되었습니다.';
+      } catch (err) {
+        statusText.textContent = '오류: ' + (err.message || String(err));
+        statusText.classList.add('error');
+      } finally {
+        submitBtn.disabled = false;
       }
-
-      analyzeBtn.disabled = false;
-      analyzeBtn.textContent = "분석 및 저장 시작";
-    });
-
-    resetBtn.addEventListener("click", () => {
-      selectedFiles.forEach(item => URL.revokeObjectURL(item.previewUrl));
-      selectedFiles = [];
-      renderPreviews();
-      resultCard.style.display = "none";
-      resultList.innerHTML = "";
     });
   </script>
 </body>
