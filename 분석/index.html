@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>음식 분석 앱</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif; }
+    body { margin: 0; padding: 20px; background: #f4f6f9; color: #1f2937; }
+    .container { max-width: 680px; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { margin: 0 0 6px; font-size: 24px; color: #111827; }
+    .header p { margin: 0; color: #6b7280; font-size: 14px; }
+    .card { background: #fff; border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .card-title { font-size: 15px; font-weight: 700; margin: 0 0 14px; display: flex; justify-content: space-between; align-items: center; }
+    .badge { background: #e0f2fe; color: #0369a1; font-size: 12px; padding: 3px 10px; border-radius: 999px; }
+    .form-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+    .radio-group { display: flex; gap: 12px; align-items: center; }
+    .radio-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 14px; }
+    select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #fff; }
+    .dropzone {
+      border: 2px dashed #cbd5e1; border-radius: 12px; padding: 28px 16px;
+      text-align: center; cursor: pointer; transition: all 0.2s; background: #f8fafc;
+    }
+    .dropzone:hover, .dropzone.dragover { border-color: #2563eb; background: #eff6ff; }
+    .dropzone p { margin: 4px 0; font-size: 14px; font-weight: 600; color: #334155; }
+    .dropzone span { font-size: 12px; color: #64748b; }
+    .preview-list { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+    .preview-item { position: relative; width: 92px; height: 92px; border-radius: 10px; overflow: hidden; border: 1px solid #e5e7eb; }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .remove-btn {
+      position: absolute; top: 4px; right: 4px; width: 22px; height: 22px;
+      border-radius: 50%; border: none; background: rgba(17,24,39,0.75); color: #fff;
+      font-size: 13px; cursor: pointer; line-height: 1;
+    }
+    .primary-btn {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      background: #1d4ed8; color: #fff; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; margin-bottom: 16px;
+    }
+    .primary-btn:hover { background: #1e40af; }
+    .primary-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+    .result-item { display: flex; gap: 14px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 12px; background: #fafafa; }
+    .result-thumb { width: 84px; height: 84px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+    .result-body { flex: 1; min-width: 0; }
+    .result-body h4 { margin: 0 0 8px; font-size: 15px; color: #111827; }
+    .error-box { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 10px 12px; border-radius: 8px; font-size: 13px; word-break: break-all; }
+    .info-grid { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 13px; }
+    .info-row strong { color: #374151; display: inline-block; width: 115px; }
+    .comment-box { margin-top: 8px; padding: 8px 10px; background: #eff6ff; border-radius: 8px; font-size: 13px; color: #1e3a8a; }
+    .secondary-btn { padding: 8px 14px; border: 1px solid #d1d5db; background: #fff; border-radius: 8px; font-size: 13px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🍽️ 음식 분석 앱</h1>
+      <p>사진을 올리면 AI가 영양 정보를 분석하고 시트에 자동 기록해 드려요</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">사용자 정보 선택</div>
+      <div class="form-row">
+        <div class="radio-group">
+          <span style="font-size:14px; font-weight:600;">성별</span>
+          <label><input type="radio" name="gender" value="남성" checked /> 남성</label>
+          <label><input type="radio" name="gender" value="여성" /> 여성</label>
+        </div>
+        <div>
+          <span style="font-size:14px; font-weight:600; margin-right:6px;">나이대</span>
+          <select id="ageGroup">
+            <option value="">나이대를 선택하세요</option>
+            <option value="10대 이하">10대 이하</option>
+            <option value="20대">20대</option>
+            <option value="30대" selected>30대</option>
+            <option value="40대">40대</option>
+            <option value="50대">50대</option>
+            <option value="60대 이상">60대 이상</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>음식 사진 업로드</span>
+        <span class="badge" id="countBadge">0장 선택됨</span>
+      </div>
+      <div class="dropzone" id="dropzone">
+        <p>여기를 클릭하거나 사진을 끌어다 놓으세요</p>
+        <span>JPG, PNG, WEBP 지원 · 한 장 또는 여러 장 선택 가능</span>
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" multiple hidden />
+      </div>
+      <div class="preview-list" id="previewList"></div>
+    </div>
+
+    <button class="primary-btn" id="analyzeBtn" onclick="startAnalysis()">분석하기</button>
+
+    <div class="card" id="resultCard" style="display:none;">
+      <div class="card-title">
+        <span>분석 결과</span>
+        <span class="badge" id="userTag"></span>
+      </div>
+      <div id="resultList"></div>
+      <div style="text-align:right; margin-top:10px;">
+        <button class="secondary-btn" onclick="resetAll()">새로 분석하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedFiles = [];
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const previewList = document.getElementById('previewList');
+    const countBadge = document.getElementById('countBadge');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+      fileInput.value = '';
+    });
+
+    function handleFiles(fileList) {
+      for (const file of fileList) {
+        if (!file.type.startsWith('image/')) continue;
+        selectedFiles.push(file);
+      }
+      renderPreviews();
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      renderPreviews();
+    }
+
+    function renderPreviews() {
+      countBadge.textContent = `${selectedFiles.length}장 선택됨`;
+      previewList.innerHTML = '';
+      selectedFiles.forEach((file, idx) => {
+        const url = URL.createObjectURL(file);
+        const div = document.createElement('div');
+        div.className = 'preview-item';
+        div.innerHTML = `
+          <img src="${url}" alt="${file.name}" />
+          <button class="remove-btn" onclick="removeFile(${idx})">×</button>
+        `;
+        previewList.appendChild(div);
+      });
+    }
+
+    // 고해상도 이미지 전송 오류 방지를 위한 리사이즈 및 Base64 변환
+    function resizeImageToBase64(file, maxDim = 1024) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            resolve({
+              base64Data: dataUrl.split(',')[1],
+              mimeType: 'image/jpeg',
+              previewUrl: dataUrl
+            });
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function startAnalysis() {
+      const genderEl = document.querySelector('input[name="gender"]:checked');
+      const ageGroup = document.getElementById('ageGroup').value;
+
+      if (!genderEl || !ageGroup) {
+        alert('성별과 나이대를 모두 선택해 주세요.');
+        return;
+      }
+      if (selectedFiles.length === 0) {
+        alert('분석할 음식 사진을 1장 이상 업로드해 주세요.');
+        return;
+      }
+
+      const btn = document.getElementById('analyzeBtn');
+      const resultCard = document.getElementById('resultCard');
+      const resultList = document.getElementById('resultList');
+
+      btn.disabled = true;
+      btn.textContent = '분석 중입니다... 잠시만 기다려 주세요';
+      resultCard.style.display = 'block';
+      document.getElementById('userTag').textContent = `${genderEl.value} · ${ageGroup}`;
+      resultList.innerHTML = '';
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const compressed = await resizeImageToBase64(file);
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'result-item';
+        itemDiv.innerHTML = `
+          <img class="result-thumb" src="${compressed.previewUrl}" />
+          <div class="result-body">
+            <h4>#${i + 1} ${file.name}</h4>
+            <div style="font-size:13px; color:#6b7280;">AI 영양 분석 및 드라이브 저장 중...</div>
+          </div>
+        `;
+        resultList.appendChild(itemDiv);
+
+        const res = await new Promise((resolve) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler((err) => resolve({ success: false, error: err.message }))
+            .analyzeSingleFoodImage({
+              gender: genderEl.value,
+              ageGroup: ageGroup,
+              fileName: file.name,
+              mimeType: compressed.mimeType,
+              base64Data: compressed.base64Data
+            });
+        });
+
+        const bodyDiv = itemDiv.querySelector('.result-body');
+        if (res && res.success) {
+          const d = res.data;
+          bodyDiv.innerHTML = `
+            <h4>#${i + 1} ${d.foodName}</h4>
+            <div class="info-grid">
+              <div class="info-row"><strong>칼로리</strong> ${d.calories}</div>
+              <div class="info-row"><strong>탄수화물/단백질</strong> ${d.carbsAndProtein}</div>
+              <div class="info-row"><strong>알레르기 성분</strong> ${d.allergens}</div>
+            </div>
+            <div class="comment-box">💡 ${d.comment}</div>
+          `;
+        } else {
+          bodyDiv.innerHTML = `
+            <h4>#${i + 1} ${file.name}</h4>
+            <div class="error-box">분석 실패: ${res ? res.error : '알 수 없는 오류'}</div>
+          `;
+        }
+      }
+
+      btn.disabled = false;
+      btn.textContent = '분석하기';
+    }
+
+    function resetAll() {
+      selectedFiles = [];
+      renderPreviews();
+      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('resultList').innerHTML = '';
+    }
+  </script>
+</body>
+</html>
