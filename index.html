@@ -21,12 +21,26 @@
       margin-bottom: 28px;
       padding-bottom: 14px;
       border-bottom: 2px solid #222;
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
-    header h1 {
-      margin: 0 0 6px 0;
+    .header-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: 50% 20%;
+      flex-shrink: 0;
+      border: 2px solid #cbd5e1;
+      background-color: #fff;
+    }
+    .header-text h1 {
+      margin: 0 0 4px 0;
       font-size: 1.75rem;
+      line-height: 1.25;
     }
-    header p {
+    .header-text p {
       margin: 0;
       color: #666;
       font-size: 0.95rem;
@@ -114,8 +128,11 @@
 <body>
 
   <header>
-    <h1>웹앱 게시판</h1>
-    <p>만든 웹앱들을 한눈에 모아보고 바로 실행할 수 있습니다.</p>
+    <img class="header-avatar" src="./01.jpg" alt="사용자 아바타 01">
+    <div class="header-text">
+      <h1>웹앱 게시판</h1>
+      <p>만든 웹앱들을 한눈에 모아보고 바로 실행할 수 있습니다.</p>
+    </div>
   </header>
 
   <main class="card-grid" id="card-list"></main>
@@ -166,6 +183,11 @@
       <article class="card">
         <div class="photo-wrap">
           <img src="./01.jpg" alt="최상위 이미지 01.jpg">
+        </div>
+        <div class="card-body">
+          <span class="card-date">2026-11-27</span>
+          <h2 class="card-title">저장소 사진 (01.jpg)</h2>
+          <p class="card-desc">최상위 폴더에 업로드된 01.jpg 이미지입니다.</p>
         </div>
       </article>
     `;
