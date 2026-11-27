@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ko" translate="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google" content="notranslate">
+  <title>랜덤 뽑기 &amp; 팀 나누기</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f5f7fa;
+      color: #222;
+      max-width: 840px;
+      margin: 40px auto;
+      padding: 0 20px 64px;
+    }
+    header {
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #222;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.65rem;
+    }
+    .back-link {
+      text-decoration: none;
+      color: #0366d6;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      margin: 0 0 12px 0;
+      font-size: 1.12rem;
+    }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .mode-btn {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-btn.active {
+      background: #0366d6;
+      border-color: #0366d6;
+      color: #fff;
+    }
+
+    .input-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+      color: #64748b;
+    }
+    textarea {
+      width: 100%;
+      min-height: 170px;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      resize: vertical;
+      background: #fff;
+      color: #111;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #0366d6;
+    }
+
+    .options-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+    }
+    .checkbox-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      user-select: none;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: #0366d6;
+      cursor: pointer;
+    }
+    .team-count-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .team-count-box input[type="number"] {
+      width: 82px;
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .team-count-box input[type="number"]:focus {
+      outline: none;
+      border-color: #0366d6;
+    }
+
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    button.primary {
+      background-color: #0366d6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 18px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+    button.primary:hover {
+      background-color: #0252b0;
+    }
+    button.secondary {
+      background-color: #e2e8f0;
+      color: #1e293b;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 15px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+    button.secondary:hover {
+      background-color: #cbd5e1;
+    }
+
+    .pick-hero {
+      text-align: center;
+      padding: 24px 16px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .pick-hero .badge {
+      display: inline-block;
+      background: #0366d6;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    .pick-hero .winner {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #0f172a;
+      word-break: break-word;
+    }
+
+    .history-box {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+    .history-title {
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip {
+      background: #e2e8f0;
+      color: #1e293b;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .chip.drawn {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .team-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-top: 4px solid #0366d6;
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .team-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 1rem;
+      color: #0f172a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .team-card h3 span {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .team-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #334155;
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .notice {
+      color: #64748b;
+      font-size: 0.92rem;
+      margin: 0;
+    }
+    .copy-status {
+      align-self: center;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #15803d;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>랜덤 뽑기 &amp; 팀 나누기</h1>
+    <a class="back-link" href="../">← 웹앱 게시판으로 돌아가기</a>
+  </header>
+
+  <section class="card">
+    <div class="mode-tabs" role="tablist" aria-label="실행 모드 선택">
+      <button type="button" class="mode-btn active" id="tab-pick" onclick="setMode('pick')">한 명/한 개 뽑기</button>
+      <button type="button" class="mode-btn" id="tab-team" onclick="setMode('team')">원하는 팀 수로 나누기</button>
+    </div>
+
+    <div class="input-meta">
+      <label for="items-input" style="font-weight: 700; color: #1e293b;">이름 또는 항목 목록 (줄바꿈으로 구분)</label>
+      <span id="item-count">총 0개 항목</span>
+    </div>
+    <textarea id="items-input" placeholder="한 줄에 한 명 또는 한 항목씩 입력하세요.&#10;예시:&#10;김민준&#10;이서연&#10;박지호&#10;최수아&#10;정다은&#10;한도윤"></textarea>
+
+    <!-- 한 명/한 개 뽑기 옵션 -->
+    <div class="options-row" id="pick-options">
+      <label class="checkbox-label">
+        <input type="checkbox" id="exclude-drawn" checked onchange="syncPoolState()">
+        중복 제외 (이미 뽑힌 항목 제외)
+      </label>
+      <span id="remaining-info" style="font-size: 0.88rem; color: #475569;">남은 후보: 0명/개</span>
+      <button type="button" class="secondary" style="padding: 7px 12px; font-size: 0.84rem;" onclick="resetDrawnPool()">뽑힌 이력 초기화</button>
+    </div>
+
+    <!-- 팀 나누기 옵션 -->
+    <div class="options-row hidden" id="team-options">
+      <div class="team-count-box">
+        <label for="team-count">나눌 팀 수</label>
+        <input type="number" id="team-count" min="1" max="50" value="2">
+        <span>팀</span>
+      </div>
+      <span style="font-size: 0.86rem; color: #64748b;">항목을 무작위로 섞은 뒤 각 팀에 고르게 배분합니다.</span>
+    </div>
+
+    <div class="action-bar">
+      <button type="button" class="primary" id="run-btn" onclick="executeAction()">뽑기 실행</button>
+      <button type="button" class="secondary" id="redraw-btn" onclick="executeAction()">결과 다시 뽑기</button>
+      <button type="button" class="secondary" onclick="copyResult()">결과 복사</button>
+      <button type="button" class="secondary" onclick="fillSample()">예시 채우기</button>
+      <span class="copy-status" id="copy-status"></span>
+    </div>
+  </section>
+
+  <section class="card" id="result-card">
+    <h2>결과</h2>
+    <div id="result-area">
+      <p class="notice">목록을 입력한 뒤 버튼을 눌러 결과를 확인하세요.</p>
+    </div>
+  </section>
+
+  <script>
+    const textarea = document.getElementById("items-input");
+    const itemCountEl = document.getElementById("item-count");
+    const remainingInfoEl = document.getElementById("remaining-info");
+    const resultArea = document.getElementById("result-area");
+    const copyStatusEl = document.getElementById("copy-status");
+
+    let currentMode = "pick";
+    let drawnItems = [];
+    let lastResultText = "";
+    let lastResultData = null;
+
+    function getParsedItems() {
+      return textarea.value
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      const isPick = mode === "pick";
+
+      document.getElementById("tab-pick").classList.toggle("active", isPick);
+      document.getElementById("tab-team").classList.toggle("active", !isPick);
+      document.getElementById("pick-options").classList.toggle("hidden", !isPick);
+      document.getElementById("team-options").classList.toggle("hidden", isPick);
+      document.getElementById("run-btn").textContent = isPick ? "뽑기 실행" : "팀 나누기 실행";
+
+      if (lastResultData && lastResultData.mode === mode) {
+        renderResult();
+      } else {
+        resultArea.innerHTML = `<p class="notice">${isPick ? "뽑기 실행 버튼을 눌러 당첨 항목을 뽑아보세요." : "원하는 팀 수를 입력하고 팀 나누기 실행 버튼을 눌러보세요."}</p>`;
+      }
+    }
+
+    function syncPoolState() {
+      const items = getParsedItems();
+      const itemSet = new Set(items);
+      drawnItems = drawnItems.filter((item) => itemSet.has(item));
+
+      itemCountEl.textContent = `총 ${items.length}개 항목`;
+      const availableCount = items.filter((item) => !drawnItems.includes(item)).length;
+      remainingInfoEl.textContent = `남은 후보: ${availableCount}개 (뽑힌 항목 ${drawnItems.length}개)`;
+    }
+
+    function resetDrawnPool() {
+      drawnItems = [];
+      syncPoolState();
+      if (lastResultData && lastResultData.mode === "pick") {
+        lastResultData.history = [];
+        renderResult();
+      }
+    }
+
+    function executeAction() {
+      copyStatusEl.textContent = "";
+      const items = getParsedItems();
+
+      if (items.length === 0) {
+        resultArea.innerHTML = `<p class="notice">항목을 한 줄에 하나 이상 입력해 주세요.</p>`;
+        lastResultText = "";
+        lastResultData = null;
+        return;
+      }
+
+      if (currentMode === "pick") {
+        const excludeDrawn = document.getElementById("exclude-drawn").checked;
+        let candidates = excludeDrawn
+          ? items.filter((item) => !drawnItems.includes(item))
+          : items;
+
+        if (candidates.length === 0) {
+          resultArea.innerHTML = `<p class="notice">중복 제외 상태인데 모든 항목을 이미 뽑았습니다. <strong>뽑힌 이력 초기화</strong>를 누르거나 중복 제외를 해제해 주세요.</p>`;
+          return;
+        }
+
+        const picked = candidates[Math.floor(Math.random() * candidates.length)];
+        if (excludeDrawn && !drawnItems.includes(picked)) {
+          drawnItems.push(picked);
+        }
+
+        lastResultData = {
+          mode: "pick",
+          picked,
+          excludeDrawn,
+          history: [...drawnItems]
+        };
+      } else {
+        const teamCountInput = document.getElementById("team-count");
+        const teamCount = Math.floor(Number(teamCountInput.value));
+
+        if (!Number.isFinite(teamCount) || teamCount < 1) {
+          resultArea.innerHTML = `<p class="notice">팀 수는 1 이상의 숫자로 입력해 주세요.</p>`;
+          return;
+        }
+
+        const actualTeamCount = Math.min(teamCount, items.length);
+        const shuffled = shuffleArray(items);
+        const teams = Array.from({ length: actualTeamCount }, () => []);
+
+        shuffled.forEach((person, idx) => {
+          teams[idx % actualTeamCount].push(person);
+        });
+
+        lastResultData = {
+          mode: "team",
+          requestedTeams: teamCount,
+          teams
+        };
+      }
+
+      syncPoolState();
+      renderResult();
+    }
+
+    function renderResult() {
+      if (!lastResultData) return;
+
+      if (lastResultData.mode === "pick") {
+        const { picked, excludeDrawn, history } = lastResultData;
+        const historyHTML = excludeDrawn
+          ? `
+            <div class="history-box">
+              <div class="history-title">이미 뽑힌 항목 (${history.length}개)</div>
+              <div class="tag-list">
+                ${history.length > 0
+                  ? history.map((h) => `<span class="chip drawn">${escapeHtml(h)}</span>`).join("")
+                  : `<span class="notice">아직 뽑힌 항목이 없습니다.</span>`
+                }
+              </div>
+            </div>
+          `
+          : "";
+
+        resultArea.innerHTML = `
+          <div class="pick-hero">
+            <div class="badge">${excludeDrawn ? "중복 제외 뽑기 결과" : "랜덤 뽑기 결과"}</div>
+            <div class="winner">${escapeHtml(picked)}</div>
+          </div>
+          ${historyHTML}
+        `;
+
+        const lines = [
+          `[랜덤 뽑기 결과]`,
+          `당첨 항목: ${picked}`
+        ];
+        if (excludeDrawn && history.length > 0) {
+          lines.push(`뽑힌 이력 (${history.length}개): ${history.join(", ")}`);
+        }
+        lastResultText = lines.join("\n");
+      } else {
+        const { teams, requestedTeams } = lastResultData;
+        const noteHTML = requestedTeams > teams.length
+          ? `<p class="notice" style="margin-bottom: 12px;">입력된 항목 수(${teams.length}개)에 맞춰 ${teams.length}개 팀으로 구성했습니다.</p>`
+          : "";
+
+        const cardsHTML = teams
+          .map(
+            (members, idx) => `
+              <article class="team-card">
+                <h3>${idx + 1}팀 <span>${members.length}명/개</span></h3>
+                <ul>
+                  ${members.map((m) => `<li>${escapeHtml(m)}</li>`).join("")}
+                </ul>
+              </article>
+            `
+          )
+          .join("");
+
+        resultArea.innerHTML = `${noteHTML}<div class="teams-grid">${cardsHTML}</div>`;
+
+        const lines = [
+          `[팀 나누기 결과 - 총 ${teams.length}팀]`,
+          ...teams.flatMap((members, idx) => [
+            `${idx + 1}팀 (${members.length}명/개): ${members.join(", ")}`
+          ])
+        ];
+        lastResultText = lines.join("\n");
+      }
+    }
+
+    function copyResult() {
+      if (!lastResultText) {
+        copyStatusEl.textContent = "복사할 결과가 없습니다.";
+        return;
+      }
+      navigator.clipboard.writeText(lastResultText).then(() => {
+        copyStatusEl.textContent = "결과가 복사되었습니다!";
+        setTimeout(() => {
+          copyStatusEl.textContent = "";
+        }, 2000);
+      }).catch(() => {
+        copyStatusEl.textContent = "복사에 실패했습니다.";
+      });
+    }
+
+    function fillSample() {
+      textarea.value = [
+        "김민준",
+        "이서연",
+        "박지호",
+        "최수아",
+        "정다은",
+        "한도윤"
+      ].join("\n");
+      drawnItems = [];
+      syncPoolState();
+      executeAction();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    textarea.addEventListener("input", syncPoolState);
+    syncPoolState();
+  </script>
+
+</body>
+</html>
