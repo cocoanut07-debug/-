@@ -54,6 +54,20 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 
+    /* 사진 카드 이미지 영역 */
+    .photo-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background-color: #eef1f5;
+      overflow: hidden;
+    }
+    .photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
     /* 카드 본문 */
     .card-body {
       padding: 20px;
@@ -126,27 +140,42 @@
         desc: "이름이나 항목 목록을 붙여넣어 당첨자를 뽑거나 원하는 팀 수로 나누는 웹앱입니다.",
         url: "./random/",
         date: "2026-11-27"
-      },
-       {
-        url: "./01.jpg/"
       }
     ];
 
     const cardList = document.getElementById("card-list");
+    cardList.innerHTML = "";
 
-    apps.forEach((app) => {
-      const cardHTML = `
-        <article class="card">
-          <div class="card-body">
-            <span class="card-date">${app.date}</span>
-            <h2 class="card-title">${app.title}</h2>
-            <p class="card-desc">${app.desc}</p>
-            <a class="card-btn" href="${app.url}">앱 열기</a>
-          </div>
-        </article>
-      `;
-      cardList.innerHTML += cardHTML;
-    });
+    apps
+      .filter((app) => app && app.title && app.url)
+      .forEach((app) => {
+        const cardHTML = `
+          <article class="card">
+            <div class="card-body">
+              <span class="card-date">${app.date || ""}</span>
+              <h2 class="card-title">${app.title}</h2>
+              <p class="card-desc">${app.desc || ""}</p>
+              <a class="card-btn" href="${app.url}">앱 열기</a>
+            </div>
+          </article>
+        `;
+        cardList.innerHTML += cardHTML;
+      });
+
+    // 게시판 맨 끝에 최상위 ./01.jpg 사진 카드 추가
+    const photoCardHTML = `
+      <article class="card">
+        <div class="photo-wrap">
+          <img src="./01.jpg" alt="최상위 이미지 01.jpg">
+        </div>
+        <div class="card-body">
+          <span class="card-date">2026-11-27</span>
+          <h2 class="card-title">저장소 사진 (01.jpg)</h2>
+          <p class="card-desc">최상위 폴더에 업로드된 01.jpg 이미지입니다.</p>
+        </div>
+      </article>
+    `;
+    cardList.innerHTML += photoCardHTML;
   </script>
 
 </body>
